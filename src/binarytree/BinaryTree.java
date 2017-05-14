@@ -7,20 +7,19 @@ package binarytree;
 
 /**
  *
- * @author Лариса Конина 
- * 23501/3
+ * @author Лариса Конина 23501/3
  */
-
-
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-
+import java.util.List;
 // Attention: comparable supported but comparator is not
+
 @SuppressWarnings("WeakerAccess")
 public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> {
 
     private static class Node<T> {
+
         final T value;
 
         Node<T> left = null;
@@ -46,12 +45,10 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> {
         Node<T> newNode = new Node<>(t);
         if (closest == null) {
             root = newNode;
-        }
-        else if (comparison < 0) {
+        } else if (comparison < 0) {
             assert closest.left == null;
             closest.left = newNode;
-        }
-        else {
+        } else {
             assert closest.right == null;
             closest.right = newNode;
         }
@@ -65,60 +62,136 @@ public class BinaryTree<T extends Comparable<T>> extends AbstractSet<T> {
 
     private boolean checkInvariant(Node<T> node) {
         Node<T> left = node.left;
-        if (left != null && (left.value.compareTo(node.value) >= 0 || !checkInvariant(left))) return false;
+        if (left != null && (left.value.compareTo(node.value) >= 0 || !checkInvariant(left))) {
+            return false;
+        }
         Node<T> right = node.right;
         return right == null || right.value.compareTo(node.value) > 0 && checkInvariant(right);
     }
-    
- public Node <T> minimumElement(Node<T> root) {
-     
-         if (root.left == null) return root;
-         
-         else  return minimumElement(root.left);
- 
+
+    private Node<T> minimumElement(Node<T> t) {
+
+        if (t.left == null) {
+            return t;
+        } else {
+            return minimumElement(t.left);
+        }
+
     }
 
-   
-private boolean remove(Node <T> t) {
-      
-         if (t == null)  return false;
+    @Override
+    public boolean remove(Object o) {
+        @SuppressWarnings("unchecked")
+        T t = (T) o;
+        if (t == null) {
+            return false;
+        }
+        int comparison = t.compareTo(root.value);
 
-
- // if nodeToBeDeleted have both children
-         if (t.left != null && t.right != null) {
+        if (comparison == 0) {
+            // if nodeToBeDeleted have both children
+            if (root.left != null && root.right != null) {
                 Node<T> temp = (Node<T>) t;
- // Finding minimum element from right
-                Node <T> minNodeForRight = minimumElement(temp.right);
- // Replacing current node with minimum node from right subtree
-                t= minNodeForRight;
-                Node <T> newMinNodeForRight = minimumElement(t.right);
- // Deleting minimum node from right now
+
+                // Finding minimum element from right
+                Node<T> minNodeForRight = minimumElement(temp.right);
+                // Replacing current node with minimum node from right subtree
+                root = minNodeForRight;
+
+                Node<T> newMinNodeForRight = minimumElement(root.right);
+                // Deleting minimum node from right now
                 remove(newMinNodeForRight);
-         }
- 
- // if nodeToBeDeleted has only left child
-         else if (t.left != null) {
-             
-             t = t.left;     
-         }
 
- // if nodeToBeDeleted has only right child NO ROOT LEFT
-         else if (t.right != null) {
-             
-             t = t.right;
-         }
+            } // if nodeToBeDeleted has only left child
+            else if (root.left != null) {
 
+                root = root.left;
 
- // if nodeToBeDeleted do not have child
-         else    t = null;
- 
-         size--;
-         
-         return true;
- 
- }
- 
-    
+            } // if nodeToBeDeleted has only right child NO ROOT LEFT
+            else if (root.right != null) {
+
+                root = root.right;
+
+            } // if nodeToBeDeleted do not have child
+            else {
+                root = null;
+            }
+
+        } else if (findNode(root, t, comparison)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean findNode(Node<T> root, T value, int comparison) {
+        //root.value < t, root in left subtree
+        int check_comparison;
+        if (comparison < 0) {
+
+            if (root.left != null) {
+
+                check_comparison = value.compareTo(root.left.value);
+                if (check_comparison == 0) {
+                    return removeNode(root, -1);
+                } else if (findNode(root.left, value, check_comparison)) {
+                    return true;
+                }
+
+            }
+        } //root.value > t, root in right subtree
+        else if (comparison > 0) {
+
+            if (root.right != null) {
+
+                check_comparison = value.compareTo(root.right.value);
+                if (check_comparison == 0) {
+                    return removeNode(root, 1);
+                } else if (findNode(root.right, value, check_comparison)) {
+                    return true;
+                }
+
+            }
+        }
+
+        return false;
+    }
+
+    public boolean removeNode(Node<T> t, int check) {     //almost the same as void REMOVE
+
+        //check means in which subtree of t is Node to be deleted
+        // check = 1 - right subtree
+        // check = -1 - left subtree
+        if (check == 1) {
+            if (t.right.left == null) {
+                t.right = t.right.right;
+            } else {
+                Node<T> right = t.right.right;
+                t.right = t.right.left;
+                Node<T> lowest = minimumElement(t.right);
+                lowest.right = right;
+
+            }
+
+            size--;
+            return true;
+        } else if (check == -1) {
+            if (t.left.left == null) {
+                t.left = t.left.right;
+            } else {
+                Node<T> right = t.left.right;
+                t.left = t.left.left;
+                Node<T> lowest = minimumElement(t.left);
+                lowest.right = right;
+
+            }
+
+            size--;
+            return true;
+        }
+
+        return false;
+    }
 
     @Override
     public boolean contains(Object o) {
@@ -129,7 +202,9 @@ private boolean remove(Node <T> t) {
     }
 
     private Node<T> find(T value) {
-        if (root == null) return null;
+        if (root == null) {
+            return null;
+        }
         return find(root, value);
     }
 
@@ -137,13 +212,15 @@ private boolean remove(Node <T> t) {
         int comparison = value.compareTo(start.value);
         if (comparison == 0) {
             return start;
-        }
-        else if (comparison < 0) {
-            if (start.left == null) return start;
+        } else if (comparison < 0) {
+            if (start.left == null) {
+                return start;
+            }
             return find(start.left, value);
-        }
-        else {
-            if (start.right == null) return start;
+        } else {
+            if (start.right == null) {
+                return start;
+            }
             return find(start.right, value);
         }
     }
@@ -152,7 +229,8 @@ private boolean remove(Node <T> t) {
 
         private Node<T> current = null;
 
-        private BinaryTreeIterator() {}
+        private BinaryTreeIterator() {
+        }
 
         private Node<T> findNext() {
             throw new UnsupportedOperationException();
@@ -166,12 +244,14 @@ private boolean remove(Node <T> t) {
         @Override
         public T next() {
             current = findNext();
-            if (current == null) throw new NoSuchElementException();
+            if (current == null) {
+                throw new NoSuchElementException();
+            }
             return current.value;
         }
     }
 
-   // @NotNull
+    // @NotNull
     @Override
     public Iterator<T> iterator() {
         return new BinaryTreeIterator();
@@ -181,9 +261,8 @@ private boolean remove(Node <T> t) {
     public int size() {
         return size;
     }
-    
-      public static void main(String[] args) {
-   
-   }
-}
 
+    public static void main(String[] args) {
+
+    }
+}

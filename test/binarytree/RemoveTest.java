@@ -29,7 +29,7 @@ public class RemoveTest {
       
         assertEquals(4, tree.size());
         
-        tree.remove(3);
+       tree.remove(3);
         assertEquals(3, tree.size());
        
          
@@ -43,39 +43,20 @@ public class RemoveTest {
         */
          
 
-        assertFalse(tree.contains(3));
-        assertTrue(tree.contains(2));
+       assertFalse(tree.contains(3));
+       assertTrue(tree.contains(2));
         assertTrue(tree.contains(1));
         assertTrue(tree.contains(4));
         
         tree.remove(1);
-        tree.remove(2);
+        assertEquals(2, tree.size() );
+        
         tree.remove(4);
+        assertEquals(1, tree.size());
         
-        assertEquals(0, tree.size());
-       
-        tree.add(1);
-        tree.add(3);
-        tree.add(4);
-        tree.add(6);
-        tree.add(7);
-        tree.add(8);
-        tree.add(10);
-        tree.add(13);
-        tree.add(14);
+        tree.remove(2);
+        assertFalse(tree.contains(2));
         
-        assertEquals(9, tree.size());
-        
-        assertTrue(tree.remove(13));
-        assertFalse(tree.contains(13));
-        
-        assertTrue(tree.remove(14));
-        assertFalse(tree.contains(14));
-        
-         assertFalse(tree.remove(2));
-        
-        
-      
     }
     
 }
